@@ -31,10 +31,34 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h3>Quick Start</h3>
+        <h3>Install</h3>
 
-<p>Download and unzip the vanilla <a href="http://appjs.org/#download">appjs distributable for your platform</a></p>
-<p>Download <a href="https://github.com/sihorton/appjs-platform/zipball/master">appjs-platform zip</a> and unzip into the same directory.</p>
+<p>First download and extract the vanilla appjs <a href="http://appjs.org/#download">distribution for your platform</a>. 
+Then download and extract <a href="https://github.com/sihorton/appjs-platform/zipball/master">appjs-platform</a> into a folder on your desktop. 
+Copy the data directory over the top of the data folder in the vanilla appjs folder from the distribution.
+This will update the app.js script, add a packagedApp2.js router for reading packaged applications and also add some
+modules for working with packaged applications. If running on windows then also copy app.exe over the built in app.exe 
+if you want to be able to use file associations.
+</p>
+
+    <h3>Running Packaged applications: Windows 7</h3>
+<p>To run packaged applications on windows you need to create a file association. Click on one of the example apps in the apps directory (e.g. helloWorld.appjs). Windows will open a dialog saying "windows can't open this file", click the second option "Select a program from a list of installed programs", click browse and then navigate to the app.exe program in the appjs directory and then click ok. When you now click on a packaged application file it will automatically open and run the program.
+</p>
+  <h3>Running Packaged applications: other os</h3>
+<p>As a general instruction right click on a .appjs application file and then choose to open it with the app.exe or app.sh script. Select that script / exe as the default way to open the file type and the OS will then automatically run AppJS for you.</p>
+
+<h3>Creating Packaged applications</h3>
+<p>First develop a working appjs application using the normal appjs layout. When you are happy then the appjs-appPackager project provides a command line tool to create a packaged application from a normal appjs application.
+</p>
+
+<h3>Tips</h3>
+<p>To enable the same app.js code to run both inside and outside of a package add the following rows of code as the first lines of your script:</p>
+<pre><code>
+if (!app) {
+  var app = module.exports = require("appjs");
+  app.serveFilesFrom(__dirname + "/content");
+}
+</code></pre>
 
       </section>
     </div>
