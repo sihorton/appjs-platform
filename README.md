@@ -59,3 +59,17 @@ It is important to note that the current implementation does not handle node mod
 certain node modules to be available then you will need to copy them to the users appjs-platform folder. We will probably
 add some form of support for modules in the future. In general javascript modules should not be a problem, but C++ modules
 will have to be selected based upon the platform that appjs is installed on.
+
+
+
+Why do this?
+---------
+
+Well currently if you want to distribute apps to others then a common way is to distribute the vanilla appjs download with your application files replacing the content directory. However this adds more than 20 Meg of overhead. If you now want to push out an update to the application then the user has to download that 20+ Meg file again. The idea of the patch is to get the user to install the "runtime" once. Then you can send them as many apps and updates as you like with the application only being the size of your content.
+
+Once you have the runtime you can copy .appjs files anywhere on your computer / network / usb stick and simply clicking on the file will launch AppJS and run the application.
+
+How does it actually work?
+-------
+
+All that is going on is that all of the content files for your application including the app.js file are appended into a single file. A new router has been written that can translate "http://appjs/myPackageFile.txt" into a location in the package file, extract the file contents and then send the file to the application. In this way it works transparently to the developer / user. There is also an app.readPackageFile() function that lets you read files from the package at runtime, this works transparently if you are running from a normal directory or from inside a packaged application. The .appjs file is not compressed at all so that it will have high performance on slower machines (running from a package adds minimal overhead).
