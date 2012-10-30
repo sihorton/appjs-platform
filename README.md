@@ -10,7 +10,8 @@ First download and extract the vanilla appjs [distribution for your platform](ht
 download and extract [appjs-platform](https://github.com/sihorton/appjs-platform/zipball/master) into a folder on your desktop.
 Copy the data directory over the top of the data folder in the vanilla appjs folder from the distribution. 
 This will update the app.js script, add a packagedApp2.js router for reading packaged applications and also add some modules
-for working with packaged applications.
+for working with packaged applications. If running on windows then also copy app.exe over the built in app.exe if you want 
+to be able to use file associations.
 
 Running packaged applications
 =====
