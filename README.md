@@ -3,7 +3,7 @@ appjs-platform
 
 appjs patch to support running packaged applications
 
-    This is a very early release of the patch so expect teathing problems!
+    This is a very early release of the patch so expect teething problems!
 
 Install
 ----
