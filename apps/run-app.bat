@@ -1,0 +1,1 @@
+"../data/bin/node.exe" --harmony "../data/app-platform.js" "C:\Portable\Projects\appjs\appjs-platform\apps\writeLogReadPackageFile.appjs"
