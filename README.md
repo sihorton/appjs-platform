@@ -52,3 +52,10 @@ running from a directory or running from inside a package:
 
 An example application "writeLogReadPackageFile" is provided to demonstrate a working example.
 
+Node Modules
+-------------
+
+It is important to note that the current implementation does not handle node modules at all. If your application requires
+certain node modules to be available then you will need to copy them to the users appjs-platform folder. We will probably
+add some form of support for modules in the future. In general javascript modules should not be a problem, but C++ modules
+will have to be selected based upon the platform that appjs is installed on.
