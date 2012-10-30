@@ -1,7 +1,7 @@
 appjs-platform
 ==============
 
-appjs install that is able to serve multiple packaged applications
+appjs patch to support running packaged applications
 
 Install
 ----
