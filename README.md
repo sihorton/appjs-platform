@@ -45,10 +45,10 @@ lines of your script:
 To read a file from app.js that is part of the application you can use the app.readPackageFile, this will work if you are 
 running from a directory or running from inside a package:
 
-  app.readPackageFile("packageFile.txt", function(err,buffer) {
-    if (err) throw err;
-    console.log(buffer.toString());
-  }
+    app.readPackageFile("packageFile.txt", function(err,buffer) {
+        if (err) throw err;
+        console.log(buffer.toString());
+    }
 
 An example application "writeLogReadPackageFile" is provided to demonstrate a working example.
 
