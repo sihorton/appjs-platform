@@ -53,14 +53,20 @@ if you want to be able to use file associations.
 
 <h3>Tips</h3>
 <p>To enable the same app.js code to run both inside and outside of a package add the following rows of code as the first lines of your script:</p>
-<pre><code>
-if (!app) {
+<pre><code>if (!app) {
   var app = module.exports = require("appjs");
   app.serveFilesFrom(__dirname + "/content");
-}
-</code></pre>
+}</code></pre>
+<p>To read a file from app.js that is part of the application you can use the app.readPackageFile, this will work if you are running from a directory or running from inside a package:</p>
 
-      </section>
+<pre><code>app.readPackageFile("packageFile.txt", function(err,buffer) { if (err) throw err; console.log(buffer.toString()); }</code></pre>
+
+An example application "writeLogReadPackageFile" is provided to demonstrate a working example.
+
+<h3>Node Modules</h3>
+
+<p>It is important to note that the current implementation does not handle node modules at all. If your application requires certain node modules to be available then you will need to copy them to the users appjs-platform folder. We will probably add some form of support for modules in the future. In general javascript modules should not be a problem, but C++ modules will have to be selected based upon the platform that appjs is installed on.</p>
+</section>
     </div>
 
     <!-- FOOTER  -->
