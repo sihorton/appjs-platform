@@ -59,7 +59,10 @@ if you want to be able to use file associations.
 }</code></pre>
 <p>To read a file from app.js that is part of the application you can use the app.readPackageFile, this will work if you are running from a directory or running from inside a package:</p>
 
-<pre><code>app.readPackageFile("packageFile.txt", function(err,buffer) { if (err) throw err; console.log(buffer.toString()); }</code></pre>
+<pre><code>app.readPackageFile("packageFile.txt", function(err,buffer) {
+    if (err) throw err; 
+    console.log(buffer.toString()); 
+}</code></pre>
 
 An example application "writeLogReadPackageFile" is provided to demonstrate a working example.
 
