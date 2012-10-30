@@ -32,3 +32,23 @@ First develop a working appjs application using the normal appjs layout. When yo
 [appjs-appPackager](https://github.com/sihorton/appjs-appPackager) project provides a command line tool to create a 
 packaged application from a normal appjs application.
 
+Tips
+------
+To enable the same app.js code to run both inside and outside of a package add the following rows of code as the first 
+lines of your script:
+
+    if (!app) {
+      var app = module.exports = require("appjs");
+      app.serveFilesFrom(__dirname + "/content");
+    }
+
+To read a file from app.js that is part of the application you can use the app.readPackageFile, this will work if you are 
+running from a directory or running from inside a package:
+
+  app.readPackageFile("packageFile.txt", function(err,buffer) {
+    if (err) throw err;
+    console.log(buffer.toString());
+  }
+
+An example application "writeLogReadPackageFile" is provided to demonstrate a working example.
+
