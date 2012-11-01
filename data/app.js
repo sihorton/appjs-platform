@@ -16,6 +16,7 @@ var config = {
 	,modulePackageExt:'.modpack'
 	,appInfoFile:'appInfo.json'
 	,preferOfficialModules:true
+	,moduleDir:__dirname+"/node_modules/"
 }
 
 var fs    = require('fs')
@@ -79,9 +80,9 @@ if (process.argv.length>2) {
 						console.log("there were errors installing required dependancies.");
 					} else {
 						if (missing.length==0) {
-							console.log("dependancies satisfied");
+							console.log("\ndependancies satisfied\n");
 						} else {
-							console.log("dependancies installed ok.");
+							console.log("\ndependancies installed ok.\n");
 						}
 						if (packagedApp2.getEntry('app.js')) {
 							//packagedApp2.readFileAsync('app.js',function(buffer,err) {
@@ -176,7 +177,7 @@ function handleDependancies(app,callback) {
 		}
 		var platformInfo = {};
 		var appInfo = JSON.parse(buffer.toString());
-		console.log(appInfo['appName']+" v"+appInfo['appVersion']+"."+appInfo['packageVer']+" dependancies:");
+		console.log("\nchecking dependancies:"+appInfo['appName']+" v"+appInfo['appVersion']+"."+appInfo['packageVer']);
 		//read platform dependancies...
 		fs.exists(__dirname+"/"+config.appInfoFile,function(exists) {
 			if (!exists) {
@@ -195,13 +196,13 @@ function handleDependancies(app,callback) {
 							if (platformInfo.deps[i]) {
 								pDep = platformInfo.deps[i];
 								if (upgradeNeeded(aDep.version,pDep.version)) {
-									console.log("-"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
+									console.log("\t<"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
 									missing.push(aDep);
 								} else {
-									console.log("+"+aDep.name+" v"+aDep.version);
+									console.log("\t+"+aDep.name+" v"+aDep.version);
 								}
 							} else {
-								console.log("-"+aDep.name+" v"+aDep.version);
+								console.log("\t-"+aDep.name+" v"+aDep.version);
 								missing.push(aDep);
 							}
 						}
@@ -212,16 +213,13 @@ function handleDependancies(app,callback) {
 						downloadModules(missing,appInfo,platformInfo,function(err,downloaded) {
 							if (err) {
 								//there was an error downloading the modules.
+							} else {
+								//console.log("required modules downloaded");
 							}
-							console.log("modules downloaded");
-							console.log(platformInfo);
-							console.log(downloaded);
 							var updating = 0;
 							for(var m=downloaded.length-1;m>-1;m--) {
-								console.log(downloaded[m]);
 								updating++;
-								console.log(__dirname+"/node_modules/"+downloaded[m].name+"/package.json");
-								fs.readFile(__dirname+"/node_modules/"+downloaded[m].name+"/package.json", 'utf8', function (err,data) {
+								fs.readFile(config.moduleDir+downloaded[m].name+"/package.json", 'utf8', function (err,data) {
 									if (err) {
 										console.log("module was downloaded and extracted, but failed to install properly",err);
 									} else {
@@ -234,13 +232,11 @@ function handleDependancies(app,callback) {
 										  platformInfo.deps[modPackageInfo.name].platforms[process.platform] = process.platform;
 										  if (--updating<1) {
 											//modules downloaded and platform info updated.
-											fs.writeFile(__dirname+"/"+config.appInfoFile,JSON.stringify(platformInfo, null,4),function(err) {
+											fs.writeFile(__dirname+"/"+config.appInfoFile+"2",JSON.stringify(platformInfo, null,4),function(err) {
 												if (err) {
 													console.log(err);
 												} else {
-													console.log("wrote platform config file");
-													console.log(__dirname+"/"+config.appInfoFile);
-													callback(undefined);
+													callback(undefined,missing);
 												}
 											});
 										  }
@@ -263,37 +259,37 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 		req2 = appInfo.moduleUrl;
 	}
 	//try to download module from offical sources first..
-	console.log("download modules...");
+	console.log("\n"+missing.length+" required module(s) are missing, attempting to download and install.");
 	var downloading = 0;
 	for(var i=missing.length-1;i>-1;i--) {
 		var aDep = missing[i];
 		downloading++;
 		//console.log(aDep);
 		var file = aDep.name+"-"+aDep.version+"-"+process.platform+config.modulePackageExt;
-		getFile(__dirname+"/node_modules/"+file,req1+file,req2+file,aDep,function(err,file,aDep) {
+		getModuleFile(file,req1+file,req2+file,aDep,function(err,file,aDep) {
 			if (err) {
 				console.log("callback error",err);
 				return;
 			}
-			console.log("file downloaded",file);
+			console.log("\tdownloaded:",file);
 			//file is downloaded try to detect if it is correct and unpack.
 			try {
 				var AdmZip = require('adm-zip');
-				var module = new AdmZip(file);
-				console.log("extracting to",__dirname+"/node_modules/"+aDep.name+"-test");
-				module.extractAllTo(__dirname+"/node_modules/"+aDep.name+"-test", /*overwrite*/true);
+				var module = new AdmZip(config.moduleDir+file);
+				console.log("\textracting "+aDep.name+"-test");
+				module.extractAllTo(config.moduleDir+aDep.name+"-test", /*overwrite*/true);
 				//extractAllTo is a synchronous operation!
 				//update the platform module list if it appeared to work..
 				if (--downloading<1) callback(undefined,missing);
 			} catch(e) {
-				console.log("module was downloaded but failed to unpack:",file);
+				console.log("\t!bad package:"+file);
 			}
 		});
 	}
 }
-function getFile(file,uri,fallbackUri,aDep,callback) {
+function getModuleFile(file,uri,fallbackUri,aDep,callback) {
 	
-	var o = fs.createWriteStream(file);
+	var o = fs.createWriteStream(config.moduleDir+file);
 	o.cancel = false;
 	o.on('error',function(err) {
 		console.log("Error unable to write module file",err);
@@ -304,7 +300,7 @@ function getFile(file,uri,fallbackUri,aDep,callback) {
 			callback(err,file,aDep);
 		}
 	});
-	console.log(uri);
+	console.log("\t"+uri);
 	request(uri)
 	.on('error',function(err1) {
 		o.cancel = true;
@@ -318,7 +314,7 @@ function getFile(file,uri,fallbackUri,aDep,callback) {
 			console.log("file written");
 			callback(err,file,aDep);
 		});
-		console.log(fallbackUri);
+		console.log("\ttrying:"+fallbackUri);
 		request(fallbackUri)
 		.on('error',function(err2) {
 			console.log("error",err2.code);
