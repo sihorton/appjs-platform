@@ -51,7 +51,7 @@ if (process.argv.length>2) {
 			var appDir = appFile.substring(0,appFile.split("\\").join("/").lastIndexOf("/"));
 			//serve application from packagedApp folder
 			var app = require('appjs');
-			var packagedApp = require('./packagedApp2.js');
+			var packagedApp = require('appjs-packagedApp');
 			//serve files from the content/ directory.
 			app.router.use(packagedApp(appFile));
 			var AdmZip = require('adm-zip');
