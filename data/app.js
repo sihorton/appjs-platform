@@ -74,11 +74,15 @@ if (process.argv.length>2) {
 			}
 			if (packagedApp2.getEntry('appInfo.json')) {
 				//this package defines what dependancies it requires.
-				handleDependancies(app,function(err) {
+				handleDependancies(app,function(err,missing) {
 					if (err) {
 						console.log("there were errors installing required dependancies.");
 					} else {
-						console.log("dependancies installed ok.");
+						if (missing.length==0) {
+							console.log("dependancies satisfied");
+						} else {
+							console.log("dependancies installed ok.");
+						}
 						if (packagedApp2.getEntry('app.js')) {
 							//packagedApp2.readFileAsync('app.js',function(buffer,err) {
 							var myAppDir = appDir;
@@ -96,7 +100,10 @@ if (process.argv.length>2) {
 								__dirname = olddir;
 							});	
 							
+						} else {
+							console.log("package file error: app.js not found.");
 						}
+						
 					}
 				});
 			} else {
@@ -169,7 +176,7 @@ function handleDependancies(app,callback) {
 		}
 		var platformInfo = {};
 		var appInfo = JSON.parse(buffer.toString());
-		console.log("dependancy info found for "+appInfo['appName']+" v"+appInfo['appVersion']+"."+appInfo['packageVer']);
+		console.log(appInfo['appName']+" v"+appInfo['appVersion']+"."+appInfo['packageVer']+" dependancies:");
 		//read platform dependancies...
 		fs.exists(__dirname+"/"+config.appInfoFile,function(exists) {
 			if (!exists) {
@@ -185,34 +192,36 @@ function handleDependancies(app,callback) {
 					var missing = [];
 					for(var i in appInfo.deps) {
 							var aDep = appInfo.deps[i];
-							console.log("app requires:"+aDep.name+" v"+aDep.version);
 							if (platformInfo.deps[i]) {
 								pDep = platformInfo.deps[i];
 								if (upgradeNeeded(aDep.version,pDep.version)) {
-											missing.push(aDep);
+									console.log("-"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
+									missing.push(aDep);
 								} else {
-										console.log("OK: app wanted "+aDep.name+" v"+aDep.version + " we have "+pDep.version);
+									console.log("+"+aDep.name+" v"+aDep.version);
 								}
 							} else {
-								console.log("MISSING");
+								console.log("-"+aDep.name+" v"+aDep.version);
 								missing.push(aDep);
 							}
 						}
 					}
-					if (missing.length>0) {
-						downloadModules(missing,appInfo,platformInfo,function(err,missing) {
+					if (missing.length==0) {
+						callback(undefined,missing);
+					} else {
+						downloadModules(missing,appInfo,platformInfo,function(err,downloaded) {
 							if (err) {
 								//there was an error downloading the modules.
 							}
 							console.log("modules downloaded");
 							console.log(platformInfo);
-							console.log(missing);
+							console.log(downloaded);
 							var updating = 0;
-							for(var m=missing.length-1;m>-1;m--) {
-								console.log(missing[m]);
+							for(var m=downloaded.length-1;m>-1;m--) {
+								console.log(downloaded[m]);
 								updating++;
-								console.log(__dirname+"/node_modules/"+missing[m].name+"/package.json");
-								fs.readFile(__dirname+"/node_modules/"+missing[m].name+"/package.json", 'utf8', function (err,data) {
+								console.log(__dirname+"/node_modules/"+downloaded[m].name+"/package.json");
+								fs.readFile(__dirname+"/node_modules/"+downloaded[m].name+"/package.json", 'utf8', function (err,data) {
 									if (err) {
 										console.log("module was downloaded and extracted, but failed to install properly",err);
 									} else {
@@ -280,28 +289,6 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 				console.log("module was downloaded but failed to unpack:",file);
 			}
 		});
-		/*var o = fs.createWriteStream(__dirname+"/node_modules/"+file);
-		o.on('error',function(err) {
-			console.log("Error unable to write module file",err);
-		});
-		console.log(req1+file);
-		request(req1+file)
-			.on('error',function(err1) {
-				console.log("unable to download from url",err1.code);
-				//attempt to download using the app url instead.
-				var o2 = fs.createWriteStream(__dirname+"/node_modules/"+file);
-				o2.on('error',function(err) {
-					console.log("Error unable to write module file",err);
-				});
-				console.log(req2+file);
-				request(req2+file)
-					.on('error',function(err2) {
-						console.log("unable to download from",req1+file,err1.code);
-						console.log("unable to download from",req2+file,err2.code);
-					}).pipe(o2);
-			}).pipe(o);
-		
-		*/
 	}
 }
 function getFile(file,uri,fallbackUri,aDep,callback) {
