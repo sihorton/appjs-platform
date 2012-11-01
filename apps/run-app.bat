@@ -1,1 +1,1 @@
-"../data/bin/node.exe" --harmony "../data/app-platform.js" "./writeLogReadPackageFile.appjs"
+"../data/bin/node.exe" --harmony "../data/app.js" "./new-example.appjs"
