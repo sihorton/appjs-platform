@@ -272,7 +272,12 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 		var aDep = missing[i];
 		downloading++;
 		//console.log(aDep);
-		var file = aDep.name+"-"+aDep.version+"-"+process.platform+config.modulePackageExt;
+		var file;
+		if (aDep['crossPlatform']) {
+			file = aDep.name+"-"+aDep.version+config.modulePackageExt;
+		} else {
+			file = aDep.name+"-"+aDep.version+"-"+process.platform+config.modulePackageExt;
+		}
 		getModuleFile(file,req1+file,req2+file,aDep,function(err,file,aDep) {
 			if (err) {
 				console.log("\t"+err.message+":"+file);
