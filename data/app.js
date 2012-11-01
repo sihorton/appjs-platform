@@ -199,7 +199,7 @@ function handleDependancies(app,callback) {
 							if (platformInfo.deps[i]) {
 								pDep = platformInfo.deps[i];
 								if (upgradeNeeded(aDep.version,pDep.version)) {
-									console.log("\t<"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
+									console.log("\t>"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
 									missing.push(aDep);
 								} else {
 									console.log("\t+"+aDep.name+" v"+aDep.version);
@@ -226,7 +226,7 @@ function handleDependancies(app,callback) {
 								updating++;
 								fs.readFile(config.moduleDir+downloaded[m].name+"/package.json", 'utf8', function (err,data) {
 									if (err) {
-										console.log("module was downloaded and extracted, but failed to install properly",err);
+										console.log("\tinstall failed:",err);
 									} else {
 										var modPackageInfo = JSON.parse(data);
 										  if (!platformInfo.deps[modPackageInfo.name]) platformInfo.deps[modPackageInfo.name] = {};
@@ -235,6 +235,7 @@ function handleDependancies(app,callback) {
 										  platformInfo.deps[modPackageInfo.name].version = modPackageInfo.version;
 										  if (!platformInfo.deps[modPackageInfo.name]['platforms']) platformInfo.deps[modPackageInfo.name].platforms = {};
 										  platformInfo.deps[modPackageInfo.name].platforms[process.platform] = process.platform;
+										console.log("\tinstalled:"+modPackageInfo.name);
 										  if (--updating<1) {
 											//modules downloaded and platform info updated.
 											fs.writeFile(__dirname+"/"+config.appInfoFile+"2",JSON.stringify(platformInfo, null,4),function(err) {
@@ -282,12 +283,16 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 				try {
 					var AdmZip = require('adm-zip');
 					var module = new AdmZip(config.moduleDir+file);
-					console.log("\textracting "+aDep.name+"-test");
-					module.extractAllTo(config.moduleDir+aDep.name+"-test", /*overwrite*/true);
+					module.extractAllTo(config.moduleDir+aDep.name, /*overwrite*/true);
+					console.log("\textracted:"+file);
 					//extractAllTo is a synchronous operation!
-					//update the platform module list if it appeared to work..
+					fs.unlink(config.moduleDir+file,function(err) {
+						if (err) {
+							console.log(err);
+						}
+					});
 				} catch(e) {
-					console.log("\t!bad package:"+file);
+					console.log("\t!failed to extract:"+file);
 				}
 			}
 			if (--downloading<1) callback(downloadingErrorText,missing);
