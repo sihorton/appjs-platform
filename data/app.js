@@ -24,7 +24,10 @@ var fs    = require('fs')
 	,http = require("http")
 	,request = require('request')
 	;
-
+var appInfo = {
+	name:'Unknown'
+	,version:0
+}
 if (process.argv.length>2) {
 	//use realpath to convert relative paths.
 	var resolvedPath = path.resolve(process.argv[2]);
@@ -75,9 +78,9 @@ if (process.argv.length>2) {
 			}
 			if (packagedApp2.getEntry('appInfo.json')) {
 				//this package defines what dependancies it requires.
-				handleDependancies(app,function(err,missing) {
+				handleDependancies(app,function(err,missing,failed) {
 					if (err) {
-						console.log("there were errors installing required dependancies.");
+						console.log("\n failed to install required dependancies");
 					} else {
 						if (missing.length==0) {
 							console.log("\ndependancies satisfied\n");
@@ -176,7 +179,7 @@ function handleDependancies(app,callback) {
 			process.exit(1);
 		}
 		var platformInfo = {};
-		var appInfo = JSON.parse(buffer.toString());
+		appInfo = JSON.parse(buffer.toString());
 		console.log("\nchecking dependancies:"+appInfo['appName']+" v"+appInfo['appVersion']+"."+appInfo['packageVer']);
 		//read platform dependancies...
 		fs.exists(__dirname+"/"+config.appInfoFile,function(exists) {
@@ -211,8 +214,10 @@ function handleDependancies(app,callback) {
 						callback(undefined,missing);
 					} else {
 						downloadModules(missing,appInfo,platformInfo,function(err,downloaded) {
+							var downloadModulesErr = "";
 							if (err) {
 								//there was an error downloading the modules.
+								downloadModulesErr = err;
 							} else {
 								//console.log("required modules downloaded");
 							}
@@ -234,9 +239,9 @@ function handleDependancies(app,callback) {
 											//modules downloaded and platform info updated.
 											fs.writeFile(__dirname+"/"+config.appInfoFile+"2",JSON.stringify(platformInfo, null,4),function(err) {
 												if (err) {
-													console.log(err);
+													callback(err,missing);
 												} else {
-													callback(undefined,missing);
+													callback(downloadModulesErr,missing);
 												}
 											});
 										  }
@@ -261,6 +266,7 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 	//try to download module from offical sources first..
 	console.log("\n"+missing.length+" required module(s) are missing, attempting to download and install.");
 	var downloading = 0;
+	var downloadingErrorText = "";
 	for(var i=missing.length-1;i>-1;i--) {
 		var aDep = missing[i];
 		downloading++;
@@ -268,27 +274,29 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 		var file = aDep.name+"-"+aDep.version+"-"+process.platform+config.modulePackageExt;
 		getModuleFile(file,req1+file,req2+file,aDep,function(err,file,aDep) {
 			if (err) {
-				console.log("callback error",err);
-				return;
+				console.log("\t"+err.message+":"+file);
+				downloadingErrorText = "failed to install required packages";
+			} else {
+				console.log("\tdownloaded:",file);
+				//file is downloaded try to detect if it is correct and unpack.
+				try {
+					var AdmZip = require('adm-zip');
+					var module = new AdmZip(config.moduleDir+file);
+					console.log("\textracting "+aDep.name+"-test");
+					module.extractAllTo(config.moduleDir+aDep.name+"-test", /*overwrite*/true);
+					//extractAllTo is a synchronous operation!
+					//update the platform module list if it appeared to work..
+				} catch(e) {
+					console.log("\t!bad package:"+file);
+				}
 			}
-			console.log("\tdownloaded:",file);
-			//file is downloaded try to detect if it is correct and unpack.
-			try {
-				var AdmZip = require('adm-zip');
-				var module = new AdmZip(config.moduleDir+file);
-				console.log("\textracting "+aDep.name+"-test");
-				module.extractAllTo(config.moduleDir+aDep.name+"-test", /*overwrite*/true);
-				//extractAllTo is a synchronous operation!
-				//update the platform module list if it appeared to work..
-				if (--downloading<1) callback(undefined,missing);
-			} catch(e) {
-				console.log("\t!bad package:"+file);
-			}
+			if (--downloading<1) callback(downloadingErrorText,missing);
 		});
 	}
 }
 function getModuleFile(file,uri,fallbackUri,aDep,callback) {
 	
+	console.log("\t"+uri);
 	var o = fs.createWriteStream(config.moduleDir+file);
 	o.cancel = false;
 	o.on('error',function(err) {
@@ -300,27 +308,44 @@ function getModuleFile(file,uri,fallbackUri,aDep,callback) {
 			callback(err,file,aDep);
 		}
 	});
-	console.log("\t"+uri);
-	request(uri)
+	request(uri,function(error,response,body) {
+		if (response.statusCode != 200) {
+			//file is missing even if download was ok.
+			o.cancel = true;
+			o.destroy();
+			callback(new Error(response.statusCode+' http error'),file,aDep);
+		}
+	})
 	.on('error',function(err1) {
 		o.cancel = true;
 		o.destroy();
+		fallback(file,uri,fallbackUri,aDep,callback);
+		
+	}).pipe(o);
+	function fallback(file,uri,fallbackUri,aDep,callback) {
 		var o2 = fs.createWriteStream(file);
 		o2.on('error',function(err) {
-			console.log("file error",err);
+			console.log("Error unable to write module file",err);
 			callback(err,file,aDep);
 		});
 		o2.on('close',function(err) {
-			console.log("file written");
 			callback(err,file,aDep);
 		});
 		console.log("\ttrying:"+fallbackUri);
-		request(fallbackUri)
+		request(fallbackUri,function(error,response,body) {
+			if (response.statusCode != 200) {
+				//file is missing even if download was ok.
+				o.cancel = true;
+				o.destroy();
+				fallback(file,uri,fallbackUri,aDep,callback);
+			}
+		})
 		.on('error',function(err2) {
 			console.log("error",err2.code);
 			callback(err2,file,aDep);
 		}).pipe(o2);
-	}).pipe(o);
+	}
+	
 }
 /**
 * Compare requested version number against installed version number
