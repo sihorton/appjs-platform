@@ -1,15 +1,15 @@
 appjs-platform
 ==============
 
-appjs patch to support running packaged applications
-
-    This is a very early release of the patch so expect teething problems!
+    appjs patch to support running packaged applications
 
 Install
 ----
 
-First download and extract the vanilla appjs [distribution for your platform](http://appjs.org/#download). Then
-download and extract [appjs-platform](https://github.com/sihorton/appjs-platform/zipball/master) into a folder on your desktop.
+    we are currently working on creating a pre-compiled zip for you to install.
+
+Download and extract the vanilla appjs [distribution for your platform](http://appjs.org/#download). Then
+download [appjs-platform](https://github.com/sihorton/appjs-platform/zipball/master) extract into a folder on your desktop.
 Copy the data directory over the top of the data folder in the vanilla appjs folder from the distribution. 
 This will update the app.js script, add a packagedApp2.js router for reading packaged applications and also add some modules
 for working with packaged applications. If running on windows then also copy app.exe over the built in app.exe if you want 
@@ -30,9 +30,10 @@ Select that script / exe as the default way to open the file type and the OS wil
 Creating Packaged applications
 -----
 
-First develop a working appjs application using the normal appjs layout. When you are happy then the 
-[appjs-appPackager](https://github.com/sihorton/appjs-appPackager) project provides a command line tool to create a 
-packaged application from a normal appjs application.
+[appjs-appPackager](https://github.com/sihorton/appjs-appPackager) is a script that can take a vanilla appjs application
+and package it up into a single package file containing the application content and app.js script and a list of module
+dependancies and binary module install files. The files can be published to a website and the platform can then automatically
+download and install any missing dependancies on an end users machine.
 
 Tips
 ------
