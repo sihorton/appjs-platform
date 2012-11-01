@@ -74,7 +74,31 @@ if (process.argv.length>2) {
 			}
 			if (packagedApp2.getEntry('appInfo.json')) {
 				//this package defines what dependancies it requires.
-				handleDependancies(app);
+				handleDependancies(app,function(err) {
+					if (err) {
+						console.log("there were errors installing required dependancies.");
+					} else {
+						console.log("dependancies installed ok.");
+						if (packagedApp2.getEntry('app.js')) {
+							//packagedApp2.readFileAsync('app.js',function(buffer,err) {
+							var myAppDir = appDir;
+							app.readPackageFile('app.js',function(err,buffer) {
+								if(err) {
+									console.error("Could not open application file: %s", err);
+									process.exit(1);
+								}
+								//this is a standard app.js application
+								//run it
+								//process.chdir(appDir);
+								var olddir = __dirname;
+								__dirname = appDir;
+								eval(buffer.toString());
+								__dirname = olddir;
+							});	
+							
+						}
+					}
+				});
 			} else {
 				if (packagedApp2.getEntry('app.js')) {
 					//packagedApp2.readFileAsync('app.js',function(buffer,err) {
@@ -137,7 +161,7 @@ if (process.argv.length>2) {
 	});
 }
 
-function handleDependancies(app) {
+function handleDependancies(app,callback) {
 	app.readPackageFile('appInfo.json',function(err,buffer) {
 		if(err) {
 			console.error("Could not open application file: %s", err);
@@ -164,8 +188,7 @@ function handleDependancies(app) {
 							console.log("app requires:"+aDep.name+" v"+aDep.version);
 							if (platformInfo.deps[i]) {
 								pDep = platformInfo.deps[i];
-								if (upgradeNeeded(aDep.version,pDep.version)) {					
-									
+								if (upgradeNeeded(aDep.version,pDep.version)) {
 											missing.push(aDep);
 								} else {
 										console.log("OK: app wanted "+aDep.name+" v"+aDep.version + " we have "+pDep.version);
@@ -177,7 +200,45 @@ function handleDependancies(app) {
 						}
 					}
 					if (missing.length>0) {
-						downloadModules(missing,appInfo,platformInfo);
+						downloadModules(missing,appInfo,platformInfo,function(err,missing) {
+							if (err) {
+								//there was an error downloading the modules.
+							}
+							console.log("modules downloaded");
+							console.log(platformInfo);
+							console.log(missing);
+							var updating = 0;
+							for(var m=missing.length-1;m>-1;m--) {
+								console.log(missing[m]);
+								updating++;
+								console.log(__dirname+"/node_modules/"+missing[m].name+"/package.json");
+								fs.readFile(__dirname+"/node_modules/"+missing[m].name+"/package.json", 'utf8', function (err,data) {
+									if (err) {
+										console.log("module was downloaded and extracted, but failed to install properly",err);
+									} else {
+										var modPackageInfo = JSON.parse(data);
+										  if (!platformInfo.deps[modPackageInfo.name]) platformInfo.deps[modPackageInfo.name] = {};
+										  
+										  platformInfo.deps[modPackageInfo.name].name = modPackageInfo.name;
+										  platformInfo.deps[modPackageInfo.name].version = modPackageInfo.version;
+										  if (!platformInfo.deps[modPackageInfo.name]['platforms']) platformInfo.deps[modPackageInfo.name].platforms = {};
+										  platformInfo.deps[modPackageInfo.name].platforms[process.platform] = process.platform;
+										  if (--updating<1) {
+											//modules downloaded and platform info updated.
+											fs.writeFile(__dirname+"/"+config.appInfoFile,JSON.stringify(platformInfo, null,4),function(err) {
+												if (err) {
+													console.log(err);
+												} else {
+													console.log("wrote platform config file");
+													console.log(__dirname+"/"+config.appInfoFile);
+													callback(undefined);
+												}
+											});
+										  }
+									}
+								});
+							}
+						});
 					}
 				});
 			}
@@ -185,7 +246,7 @@ function handleDependancies(app) {
 
 	});
 }
-function downloadModules(missing,appInfo,platformInfo) {
+function downloadModules(missing,appInfo,platformInfo,callback) {
 	var req1 = appInfo.moduleUrl;
 	var req2 = platformInfo.moduleUrl;
 	if (config.preferOfficialModules) {
@@ -194,9 +255,10 @@ function downloadModules(missing,appInfo,platformInfo) {
 	}
 	//try to download module from offical sources first..
 	console.log("download modules...");
-	
+	var downloading = 0;
 	for(var i=missing.length-1;i>-1;i--) {
 		var aDep = missing[i];
+		downloading++;
 		//console.log(aDep);
 		var file = aDep.name+"-"+aDep.version+"-"+process.platform+config.modulePackageExt;
 		getFile(__dirname+"/node_modules/"+file,req1+file,req2+file,aDep,function(err,file,aDep) {
@@ -205,12 +267,15 @@ function downloadModules(missing,appInfo,platformInfo) {
 				return;
 			}
 			console.log("file downloaded",file);
-			console.log(aDep);
 			//file is downloaded try to detect if it is correct and unpack.
 			try {
 				var AdmZip = require('adm-zip');
 				var module = new AdmZip(file);
-				module.extractAllTo(__dirname+"/node_modules/"+aDep.name, /*overwrite*/true);
+				console.log("extracting to",__dirname+"/node_modules/"+aDep.name+"-test");
+				module.extractAllTo(__dirname+"/node_modules/"+aDep.name+"-test", /*overwrite*/true);
+				//extractAllTo is a synchronous operation!
+				//update the platform module list if it appeared to work..
+				if (--downloading<1) callback(undefined,missing);
 			} catch(e) {
 				console.log("module was downloaded but failed to unpack:",file);
 			}
@@ -249,7 +314,6 @@ function getFile(file,uri,fallbackUri,aDep,callback) {
 	});
 	o.on('close',function(err) {
 		if (!this.cancel) {
-			console.log("file written",this.cancel);
 			callback(err,file,aDep);
 		}
 	});

@@ -1,0 +1,46 @@
+{
+    "appName": "appjs-platform",
+    "appVersion": 0.1,
+    "packageFormat": 1,
+    "packageVer": 2,
+    "moduleUrl": "http://platform-example.com/appjsModules/",
+    "appUpdateUrl": "http://platform-example.com/new-example/latest.txt",
+    "silentUpdates": true,
+    "deps": {
+        "adm-zip": {
+            "name": "adm-zip",
+            "version": "0.1.5",
+            "platforms": {
+                "win32": "win32"
+            }
+        },
+        "appjs": {
+            "name": "appjs",
+            "version": "0.0.19",
+            "platforms": {
+                "win32": "win32"
+            }
+        },
+        "appjs-win32": {
+            "name": "appjs-win32",
+            "version": "0.0.19",
+            "platforms": {
+                "win32": "win32"
+            }
+        },
+        "iconv": {
+            "name": "iconv",
+            "version": "1.2.3",
+            "platforms": {
+                "win32": "win32"
+            }
+        },
+        "mime": {
+            "name": "mime",
+            "version": "1.2.5",
+            "platforms": {
+                "win32": "win32"
+            }
+        }
+    }
+}
