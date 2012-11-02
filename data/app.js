@@ -194,10 +194,10 @@ function handleDependancies(app,callback) {
 					platformInfo = JSON.parse(data);
 					//perform a comparison.
 					var missing = [];
-					for(var i in appInfo.appjs-dependancies) {
-							var aDep = appInfo.appjs-dependancies[i];
-							if (platformInfo.appjs-dependancies[i]) {
-								pDep = platformInfo.appjs-dependancies[i];
+					for(var i in appInfo.appdeps) {
+							var aDep = appInfo.appdeps[i];
+							if (platformInfo.appdeps[i]) {
+								pDep = platformInfo.appdeps[i];
 								if (upgradeNeeded(aDep.version,pDep.version)) {
 									console.log("\t>"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
 									missing.push(aDep);
@@ -229,12 +229,12 @@ function handleDependancies(app,callback) {
 										console.log("\tinstall failed:",err);
 									} else {
 										var modPackageInfo = JSON.parse(data);
-										  if (!platformInfo.appjs-dependancies[modPackageInfo.name]) platformInfo.appjs-dependancies[modPackageInfo.name] = {};
+										  if (!platformInfo.appdeps[modPackageInfo.name]) platformInfo.appdeps[modPackageInfo.name] = {};
 										  
-										  platformInfo.appjs-dependancies[modPackageInfo.name].name = modPackageInfo.name;
-										  platformInfo.appjs-dependancies[modPackageInfo.name].version = modPackageInfo.version;
-										  if (!platformInfo.appjs-dependancies[modPackageInfo.name]['platforms']) platformInfo.appjs-dependancies[modPackageInfo.name].platforms = {};
-										  platformInfo.appjs-dependancies[modPackageInfo.name].platforms[process.platform] = process.platform;
+										  platformInfo.appdeps[modPackageInfo.name].name = modPackageInfo.name;
+										  platformInfo.appdeps[modPackageInfo.name].version = modPackageInfo.version;
+										  if (!platformInfo.appdeps[modPackageInfo.name]['platforms']) platformInfo.appdeps[modPackageInfo.name].platforms = {};
+										  platformInfo.appdeps[modPackageInfo.name].platforms[process.platform] = process.platform;
 										console.log("\tinstalled:"+modPackageInfo.name);
 										  if (--updating<1) {
 											//modules downloaded and platform info updated.
