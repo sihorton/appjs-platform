@@ -15,7 +15,7 @@ var config = {
 	packageExt:'.appjs'
 	,modulePackageExt:'.modpack'
 	,appInfoFile:'package.json'
-	,preferOfficialModules:true
+	,preferOfficialModules:false
 	,moduleDir:__dirname+"/node_modules/"
 }
 
@@ -76,7 +76,7 @@ if (process.argv.length>2) {
 					callback(err,buffer);
 				});
 			}
-			if (packagedApp2.getEntry('appInfo.json')) {
+			if (packagedApp2.getEntry(config.appInfoFile)) {
 				//this package defines what dependancies it requires.
 				handleDependancies(app,function(err,missing,failed) {
 					if (err) {
@@ -173,7 +173,7 @@ if (process.argv.length>2) {
 }
 
 function handleDependancies(app,callback) {
-	app.readPackageFile('appInfo.json',function(err,buffer) {
+	app.readPackageFile(config.appInfoFile,function(err,buffer) {
 		if(err) {
 			console.error("Could not open application file: %s", err);
 			process.exit(1);

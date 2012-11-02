@@ -4,7 +4,7 @@
     "moduleUrl": "http://platform-example.com/appjsModules/",
     "appUpdateUrl": "http://platform-example.com/new-example/latest.txt",
     "silentUpdates": true,
-    "deps": {
+    "appdeps": {
         "adm-zip": {
             "name": "adm-zip",
             "version": "0.1.5",
