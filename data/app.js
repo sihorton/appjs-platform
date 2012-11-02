@@ -180,7 +180,7 @@ function handleDependancies(app,callback) {
 		}
 		var platformInfo = {};
 		appInfo = JSON.parse(buffer.toString());
-		console.log("\nchecking dependancies:"+appInfo['appName']+" v"+appInfo['appVersion']+"."+appInfo['packageVer']);
+		console.log("\nchecking dependancies:"+appInfo['name']+" v"+appInfo['version']);
 		//read platform dependancies...
 		fs.exists(__dirname+"/"+config.appInfoFile,function(exists) {
 			if (!exists) {
@@ -194,10 +194,10 @@ function handleDependancies(app,callback) {
 					platformInfo = JSON.parse(data);
 					//perform a comparison.
 					var missing = [];
-					for(var i in appInfo.deps) {
-							var aDep = appInfo.deps[i];
-							if (platformInfo.deps[i]) {
-								pDep = platformInfo.deps[i];
+					for(var i in appInfo.appjs-dependancies) {
+							var aDep = appInfo.appjs-dependancies[i];
+							if (platformInfo.appjs-dependancies[i]) {
+								pDep = platformInfo.appjs-dependancies[i];
 								if (upgradeNeeded(aDep.version,pDep.version)) {
 									console.log("\t>"+aDep.name+" v"+aDep.version + " ("+pDep.version+")");
 									missing.push(aDep);
@@ -229,12 +229,12 @@ function handleDependancies(app,callback) {
 										console.log("\tinstall failed:",err);
 									} else {
 										var modPackageInfo = JSON.parse(data);
-										  if (!platformInfo.deps[modPackageInfo.name]) platformInfo.deps[modPackageInfo.name] = {};
+										  if (!platformInfo.appjs-dependancies[modPackageInfo.name]) platformInfo.appjs-dependancies[modPackageInfo.name] = {};
 										  
-										  platformInfo.deps[modPackageInfo.name].name = modPackageInfo.name;
-										  platformInfo.deps[modPackageInfo.name].version = modPackageInfo.version;
-										  if (!platformInfo.deps[modPackageInfo.name]['platforms']) platformInfo.deps[modPackageInfo.name].platforms = {};
-										  platformInfo.deps[modPackageInfo.name].platforms[process.platform] = process.platform;
+										  platformInfo.appjs-dependancies[modPackageInfo.name].name = modPackageInfo.name;
+										  platformInfo.appjs-dependancies[modPackageInfo.name].version = modPackageInfo.version;
+										  if (!platformInfo.appjs-dependancies[modPackageInfo.name]['platforms']) platformInfo.appjs-dependancies[modPackageInfo.name].platforms = {};
+										  platformInfo.appjs-dependancies[modPackageInfo.name].platforms[process.platform] = process.platform;
 										console.log("\tinstalled:"+modPackageInfo.name);
 										  if (--updating<1) {
 											//modules downloaded and platform info updated.
@@ -379,6 +379,7 @@ function upgradeNeeded(requested,installed) {
 		}
 	}
 	for(var p=0;p<req.length;p++) {
+		if (req[p] == "x") return false;
 		var r = parseFloat(req[p]);
 		var g = parseFloat(got[p]);
 		if (r > g) return true;

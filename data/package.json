@@ -1,8 +1,6 @@
 {
-    "appName": "appjs-platform",
-    "appVersion": 0.1,
-    "packageFormat": 1,
-    "packageVer": 2,
+    "name": "appjs-platform",
+    "version": 0.1,
     "moduleUrl": "http://platform-example.com/appjsModules/",
     "appUpdateUrl": "http://platform-example.com/new-example/latest.txt",
     "silentUpdates": true,
@@ -37,7 +35,7 @@
         },
         "mime": {
             "name": "mime",
-            "version": "1.2.5",
+            "version": "1.2.2",
             "platforms": {
                 "win32": "win32"
             }
