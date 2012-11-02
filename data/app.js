@@ -14,7 +14,7 @@ process.on('uncaughtException',function(e) {
 var config = {
 	packageExt:'.appjs'
 	,modulePackageExt:'.modpack'
-	,appInfoFile:'appInfo.json'
+	,appInfoFile:'package.json'
 	,preferOfficialModules:true
 	,moduleDir:__dirname+"/node_modules/"
 }
