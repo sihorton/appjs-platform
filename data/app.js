@@ -238,7 +238,7 @@ function handleDependancies(app,callback) {
 										console.log("\tinstalled:"+modPackageInfo.name);
 										  if (--updating<1) {
 											//modules downloaded and platform info updated.
-											fs.writeFile(__dirname+"/"+config.appInfoFile+"2",JSON.stringify(platformInfo, null,4),function(err) {
+											fs.writeFile(__dirname+"/"+config.appInfoFile,JSON.stringify(platformInfo, null,4),function(err) {
 												if (err) {
 													callback(err,missing);
 												} else {
@@ -298,6 +298,7 @@ function downloadModules(missing,appInfo,platformInfo,callback) {
 					});
 				} catch(e) {
 					console.log("\t!failed to extract:"+file);
+					downloadingErrorText = "failed to install required packages";
 				}
 			}
 			if (--downloading<1) callback(downloadingErrorText,missing);
