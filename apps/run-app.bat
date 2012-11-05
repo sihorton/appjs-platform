@@ -1,1 +1,0 @@
-"../data/bin/node.exe" --harmony "../data/app.js" "./newModulesTest.appjs"
