@@ -29,7 +29,7 @@ var ICONS_GROUP
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
-!insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
+;!insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
@@ -59,12 +59,17 @@ Section "MainSection" SEC01
   SetOverwrite ifnewer
   File "..\app.exe"
   File /r "..\data"
-  File /r "..\apps"
 
+  SetOutPath "$INSTDIR\apps"
+  File /r "..\apps\*.appjs"
+
+  SetOutPath "$INSTDIR"
+  
   ${registerExtension} "$INSTDIR\app.exe" ".appjs" "AppJS Application"
 
   CreateDirectory "$SMPROGRAMS\appjs-platform"
   CreateShortCut "$SMPROGRAMS\appjs-platform\appjs-platform.lnk" "$INSTDIR\app.exe"
+  CreateShortCut "$SMPROGRAMS\appjs-platform\example-apps.lnk" "$INSTDIR\apps"
 SectionEnd
 
 Section -AdditionalIcons
@@ -107,7 +112,8 @@ Section Uninstall
   Delete "$SMPROGRAMS\appjs-platform\appjs-platform.lnk"
 
   RMDir "$SMPROGRAMS\appjs-platform"
-  RMDir "$INSTDIR"
+
+  RMDir /r "$INSTDIR"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
