@@ -11,7 +11,7 @@
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
-!include "supportFunctions.nsh"
+!include "install\supportFunctions.nsh"
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -48,7 +48,7 @@ RequestExecutionLevel admin
 
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "appjs-platform.exe"
+OutFile "install/appjs-platform.exe"
 InstallDir "$LOCALAPPDATA\${PRODUCT_NAME}"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails hide
@@ -57,11 +57,11 @@ ShowUnInstDetails hide
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "..\app.exe"
-  File /r "..\data"
+  File "app.exe"
+  File /r "data"
 
   SetOutPath "$INSTDIR\apps"
-  File /r "..\apps\*.appjs"
+  File /r "apps\*.appjs"
 
   SetOutPath "$INSTDIR"
   
@@ -80,7 +80,7 @@ SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${<PRODUCT_DIR_REGKEY}" "" "$INSTDIR\app.exe"
+  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\app.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\app.exe"
