@@ -23,7 +23,8 @@ if (process.argv.length>2) {
 		if (pInfo.isPackage) {
 			//serve files using the package router.
 			app.router.use(pInfo.router);
-		} 
+		}
+		app.readPackageFile = pInfo.readPackageFile;
 		appPackage.launch(pInfo);
 	});
 } else {
