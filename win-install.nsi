@@ -58,10 +58,11 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   File "app.exe"
-  File /r "data"
+  SetOutPath "$INSTDIR\data"
+  File /r "data\"
 
   SetOutPath "$INSTDIR\apps"
-  File /r "apps\*.appjs"
+  File /r "apps\"
 
   SetOutPath "$INSTDIR"
   
