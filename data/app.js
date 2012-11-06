@@ -11,20 +11,17 @@ process.on('uncaughtException',function(e) {
 	}); 
 });
 
-
-var fs    = require('fs')
+var    fs = require('fs')
 	,path = require('path')
-	//,http = require("http")
-	//,request = require('request')
-	;
+	 ,app = require('appjs')
+;
 
 if (process.argv.length>2) {
 	var appPackage = require('appjs-package');
 	appPackage.getPackageInfo(process.argv[2],function(err,pInfo) {
 		if (err) throw err;
-		var app = module.exports = require('appjs');
 		if (pInfo.isPackage) {
-			//serve files from the content/ directory.
+			//serve files using the package router.
 			app.router.use(pInfo.router);
 			pInfo.readPackageFile('app.js',function(err,buffer) {
 				if (err) {
@@ -37,80 +34,47 @@ if (process.argv.length>2) {
 				__dirname = olddir;
 			});
 		} else {
-			app.serveFilesFrom(__dirname + '/content');
-//app.router.use(require('./packagedApp.js')(__dirname + '/example.appjs'));
-
-var window = app.createWindow({
-  width  : 640,
-  height : 460,
-  icons  : __dirname + '/content/icons'
-	});
-
-window.on('create', function(){
-  console.log("Window Created");
-  window.frame.show();
-  window.frame.center();
-});
-
-window.on('ready', function(){
-  console.log("Window Ready");
-  window.require = require;
-  window.process = process;
-  window.module = module;
-
-  function F12(e){ return e.keyIdentifier === 'F12' }
-  function Command_Option_J(e){ return e.keyCode === 74 && e.metaKey && e.altKey }
-
-  window.addEventListener('keydown', function(e){
-    if (F12(e) || Command_Option_J(e)) {
-      window.frame.openDevTools();
-    }
-  });
-});
-
-window.on('close', function(){
-  console.log("Window Closed");
-});
+			var f=process.argv[2];
+			if (pInfo.isDir) {
+				f = process.argv[2]+"/app.js";
+			}
+			fs.readFile(f, function (err,buffer) {
+				if (err) {
+					return console.log(err);
+				}
+				var olddir = __dirname;
+				__dirname = path.dirname(f);
+				eval(buffer.toString());
+				__dirname = olddir;
+			});
 		}
 	});
 } else {
-app.serveFilesFrom(__dirname + '/content');
-//app.router.use(require('./packagedApp.js')(__dirname + '/example.appjs'));
+	app.serveFilesFrom(__dirname + '/content');
 
-var window = app.createWindow({
-  width  : 640,
-  height : 460,
-  icons  : __dirname + '/content/icons'
-});
+	var window = app.createWindow({
+	  width  : 640,
+	  height : 460,
+	  icons  : __dirname + '/content/icons'
+	});
 
-window.on('create', function(){
-  console.log("Window Created");
-  window.frame.show();
-  window.frame.center();
-});
+	window.on('create', function(){
+	  window.frame.show();
+	  window.frame.center();
+	});
 
-window.on('ready', function(){
-  console.log("Window Ready");
-  window.require = require;
-  window.process = process;
-  window.module = module;
+	window.on('ready', function(){
+	  window.require = require;
+	  window.process = process;
+	  window.module = module;
 
-  function F12(e){ return e.keyIdentifier === 'F12' }
-  function Command_Option_J(e){ return e.keyCode === 74 && e.metaKey && e.altKey }
+	  function F12(e){ return e.keyIdentifier === 'F12' }
+	  function Command_Option_J(e){ return e.keyCode === 74 && e.metaKey && e.altKey }
 
-  window.addEventListener('keydown', function(e){
-    if (F12(e) || Command_Option_J(e)) {
-      window.frame.openDevTools();
-    }
-  });
-});
-
-window.on('close', function(){
-  console.log("Window Closed");
-});
+	  window.addEventListener('keydown', function(e){
+		if (F12(e) || Command_Option_J(e)) {
+		  window.frame.openDevTools();
+		}
+	  });
+	});
 }
-
-
-var app = module.exports = require('appjs');
-
-
