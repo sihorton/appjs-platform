@@ -23,31 +23,8 @@ if (process.argv.length>2) {
 		if (pInfo.isPackage) {
 			//serve files using the package router.
 			app.router.use(pInfo.router);
-			pInfo.readPackageFile('app.js',function(err,buffer) {
-				if (err) {
-					console.error("Error opening app.js package file: %s", err);
-					process.exit(1);
-				}
-				var olddir = __dirname;
-				__dirname = path.dirname(pInfo.path);
-				eval(buffer.toString());
-				__dirname = olddir;
-			});
-		} else {
-			var f=process.argv[2];
-			if (pInfo.isDir) {
-				f = process.argv[2]+"/app.js";
-			}
-			fs.readFile(f, function (err,buffer) {
-				if (err) {
-					return console.log(err);
-				}
-				var olddir = __dirname;
-				__dirname = path.dirname(f);
-				eval(buffer.toString());
-				__dirname = olddir;
-			});
-		}
+		} 
+		appPackage.launch(pInfo);
 	});
 } else {
 	app.serveFilesFrom(__dirname + '/content');
