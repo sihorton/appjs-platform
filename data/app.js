@@ -56,6 +56,75 @@ if (process.argv.length>2) {
 
 	app.serveFilesFrom(__dirname + '/content');
 
+	var menubar = app.createMenu([{
+	  label:'&File',
+	  submenu:[
+		{
+		  label:'E&xit',
+		  action: function(){
+			window.close();
+		  }
+		}
+	  ]
+	},{
+	  label:'&Window',
+	  submenu:[
+		{
+		  label:'Fullscreen',
+		  action:function(item) {
+			window.frame.fullscreen();
+			console.log(item.label+" called.");
+		  }
+		},
+		{
+		  label:'Minimize',
+		  action:function(){
+			window.frame.minimize();
+		  }
+		},
+		{
+		  label:'Maximize',
+		  action:function(){
+			window.frame.maximize();
+		  }
+		},{
+		  label:''//separator
+		},{
+		  label:'Restore',
+		  action:function(){
+			window.frame.restore();
+		  }
+		}
+	  ]
+	}]);
+
+	menubar.on('select',function(item){
+	  console.log("menu item "+item.label+" clicked");
+	});
+
+	var trayMenu = app.createMenu([{
+	  label:'Show',
+	  action:function(){
+		window.frame.show();
+	  },
+	},{
+	  label:'Minimize',
+	  action:function(){
+		window.frame.hide();
+	  }
+	},{
+	  label:'Exit',
+	  action:function(){
+		window.close();
+	  }
+	}]);
+
+	var statusIcon = app.createStatusIcon({
+	  icon:'./data/content/icons/32.png',
+	  tooltip:'AppJS Hello World',
+	  menu:trayMenu
+	});
+
 	var window = app.createWindow({
 	  width  : 640,
 	  height : 460,
@@ -66,11 +135,11 @@ if (process.argv.length>2) {
 	  console.log("Window Created");
 	  window.frame.show();
 	  window.frame.center();
+	  window.frame.setMenuBar(menubar);
 	});
 
 	window.on('ready', function(){
 	  console.log("Window Ready");
-	  window.require = require;
 	  window.process = process;
 	  window.module = module;
 
@@ -87,5 +156,6 @@ if (process.argv.length>2) {
 	window.on('close', function(){
 	  console.log("Window Closed");
 	});
+
 
 }
