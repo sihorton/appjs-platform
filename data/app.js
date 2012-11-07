@@ -20,12 +20,12 @@ if (process.argv.length>2) {
 	var appPackage = require('appjs-package');
 	appPackage.getPackageInfo(process.argv[2],function(err,pInfo) {
 		if (err) throw err;
-		if (pInfo.isPackage) {
+		if (pInfo.router) {
 			//serve files using the package router.
 			app.router.use(pInfo.router);
 		}
 		app.readPackageFile = pInfo.readPackageFile;
-		appPackage.launch(pInfo);
+		appPackage.launch(pInfo, app);
 	});
 } else {
 	var app = module.exports = require('appjs');
