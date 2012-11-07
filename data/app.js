@@ -25,7 +25,31 @@ if (process.argv.length>2) {
 			app.router.use(pInfo.router);
 		}
 		app.readPackageFile = pInfo.readPackageFile;
-		appPackage.launch(pInfo, app);
+		//appPackage.launch(pInfo, app);
+		pInfo.readPackageFile(pInfo.launch,function(err,buffer) {
+			var path = require('path');
+			app.readPackageFile = pInfo.readPackageFile;
+			if (pInfo.isDir) {
+				app.serveFilesFrom(pInfo.path + '/content');
+			}
+			if (err) {
+				console.log("error:",err);
+			} else {
+				if (typeof iconsDir == "undefined") {
+					var iconsDir = __dirname + '/content/icons';
+				}
+				
+				var olddir = __dirname;
+				if (pInfo.isPackage) {
+					__dirname = path.dirname(pInfo.path);
+				} else {
+					__dirname = path.dirname(pInfo.launch);
+				}
+				eval(buffer.toString());
+				__dirname = olddir;
+			}
+		});
+		
 	});
 } else {
 	var app = module.exports = require('appjs');
