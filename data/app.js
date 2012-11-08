@@ -11,7 +11,7 @@ process.on('uncaughtException',function(e) {
 	}); 
 });
 if (process.argv.length<3) {
-	
+	var path = require('path');
 	var app = module.exports = require('appjs');
 	app.prepareIcons = function(iconList,callback) {
 		var list = {};
