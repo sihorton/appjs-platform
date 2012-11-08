@@ -10,51 +10,8 @@ process.on('uncaughtException',function(e) {
 		}
 	}); 
 });
-
-var    fs = require('fs')
-	,path = require('path')
-	 ,app = require('appjs')
-;
-
-if (process.argv.length>2) {
-	var appPackage = require('appjs-package');
-	appPackage.getPackageInfo2(process.argv[2],app,function(err,pInfo,pCode,pDir) {
-		if (err) throw err;
-		/*if (pInfo.router) {
-			//serve files using the package router.
-			app.router.use(pInfo.router);
-		}
-		app.prepareIcons = pInfo.prepareIcons;
-		app.readPackageFile = pInfo.readPackageFile;
-		*/
-		//appPackage.launch(pInfo, app);
-		//pInfo.readPackageFile(pInfo.launch,function(err,buffer) {
-			var path = require('path');
-			//app.readPackageFile = pInfo.readPackageFile;
-			//if (pInfo.isDir) {
-			//	app.serveFilesFrom(pInfo.path + '/content');
-			//}
-			//if (err) {
-			//	console.log("error:",err);
-			//} else {
-				if (typeof iconsDir == "undefined") {
-					var iconsDir = __dirname + '/content/icons';
-				}
-				
-				var olddir = __dirname;
-				/*if (pInfo.isPackage) {
-					__dirname = path.dirname(pInfo.path);
-				} else {
-					__dirname = path.dirname(pInfo.launch);
-				}*/
-				__dirname = pInfo.launchDir
-				eval(pCode.toString());
-				__dirname = olddir;
-			//}
-		//});
-		
-	});
-} else {
+if (process.argv.length<3) {
+	
 	var app = module.exports = require('appjs');
 	app.prepareIcons = function(iconList,callback) {
 		var list = {};
@@ -171,4 +128,24 @@ if (process.argv.length>2) {
 	});
 	
 
+} else {
+	//serve an application package.
+	var    app = require('appjs')
+	appPackage = require('appjs-package')
+	;
+	appPackage.getPackageInfo2(process.argv[2],app,function(err,pInfo,pCode,myapp) {
+		if (err) throw err;
+		//icons directory fix.
+		if (typeof iconsDir == "undefined") {
+			var iconsDir = __dirname + '/content/icons';
+		}
+		try {
+			var olddir = __dirname;
+			__dirname = pInfo.launchDir
+			eval(pCode.toString());
+		} catch(e) {
+			console.log("unhandled error in packaged app.js:",err);
+		}
+		__dirname = olddir;	
+	});
 }
