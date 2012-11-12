@@ -1,6 +1,6 @@
 {
     "name": "appjs-platform",
-    "version": 0.1,
+    "version": 0.23,
     "moduleUrl": "http://platform-example.com/appjsModules/",
     "appUpdateUrl": "http://platform-example.com/new-example/latest.txt",
     "silentUpdates": true,
