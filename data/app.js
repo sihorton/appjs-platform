@@ -1,3 +1,4 @@
+process.title="appjs";
 /**
 * log any uncaught exceptions to disk in case user is not running from console.
 */
@@ -10,6 +11,7 @@ process.on('uncaughtException',function(e) {
 		}
 	}); 
 });
+
 if (process.argv.length<3) {
 	var path = require('path');
 	var app = module.exports = require('appjs');
